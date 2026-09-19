@@ -1,0 +1,8 @@
+{
+  "name": "Brain Focus",
+  "description": "Nền tảng học tập sâu, rèn luyện tập trung & Bảng xếp hạng trực tuyến đa người dùng với Firebase Cloud Firestore",
+  "requestFramePermissions": [],
+  "majorCapabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
+}

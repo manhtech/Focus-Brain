@@ -1,0 +1,50 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // Quản lý thông tin người dùng & Bảng xếp hạng
+    match /users/{userId} {
+      // Cho phép đọc thông tin người dùng và bảng xếp hạng công khai cho học viên
+      allow read: if true;
+      
+      // Chỉ người dùng được xác thực mới có thể tạo tài khoản của chính mình (UID khớp)
+      allow create: if request.auth != null && request.auth.uid == userId
+        && request.resource.data.uid == userId
+        && request.resource.data.keys().hasAll(['uid', 'displayName', 'rankingScore', 'bfsScore']);
+        
+      // Chỉ cho phép người dùng cập nhật hồ sơ của chính mình
+      // Ngăn chặn các hành vi giả mạo hoặc chỉnh sửa tài khoản của người khác
+      allow update: if request.auth != null && request.auth.uid == userId
+        // Không cho phép thay đổi UID
+        && request.resource.data.uid == userId;
+        
+      // Không cho phép xóa tài khoản người khác
+      allow delete: if request.auth != null && request.auth.uid == userId;
+    }
+    
+    // Quản lý nhật ký phiên học tập trung
+    match /sessions/{sessionId} {
+      allow read: if true;
+      allow create: if request.auth != null 
+        && request.resource.data.uid == request.auth.uid
+        && request.resource.data.durationMinutes is number
+        && request.resource.data.durationMinutes > 0;
+      allow update, delete: if request.auth != null 
+        && resource.data.uid == request.auth.uid;
+    }
+    
+    // Quản lý thành tích và kết quả trò chơi Gym não
+    match /game_records/{recordId} {
+      allow read: if true;
+      allow create: if request.auth != null && request.resource.data.uid == request.auth.uid;
+      allow update, delete: if request.auth != null && resource.data.uid == request.auth.uid;
+    }
+    
+    // Phản hồi và góp ý
+    match /feedback/{feedbackId} {
+      allow read: if true;
+      allow create: if true;
+      allow update, delete: if request.auth != null;
+    }
+  }
+}
